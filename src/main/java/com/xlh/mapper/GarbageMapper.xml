@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlh.mapper.GarbageMapper">
+<!-- 	<cache readOnly="true"></cache> -->
+	<select id="selAll" resultType="garbageinfo">
+		SELECT g.id gid,g.name
+		gname,t.name tname,count
+		from garbage g LEFT JOIN type t
+		on g.tid=t.id ORDER BY count desc
+	</select>
+	<select id="selByName" resultType="garbageinfo">
+	    SELECT g.id id,g.name
+		gname,t.name tname,tid,count
+		from garbage g LEFT JOIN type t on g.tid=t.id where g.name like #{name}
+		ORDER BY count desc limit #{pageStart},#{pageSize}
+		<bind name="name" value="'%'+name+'%'" />
+	</select>
+
+	<select id="selByTypeId" resultType="garbageinfo">
+		SELECT  g.id id,g.name
+		gname,t.name tname,tid,count
+		from garbage g LEFT JOIN type t on g.tid=t.id
+		<choose>
+			<when test="tid!=0">
+				where tid in (#{tid})
+			</when>
+			<otherwise>
+				where tid in (1,2,3,4)
+			</otherwise>
+		</choose>
+		ORDER BY count desc limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="selByNameAndType" resultType="garbageinfo">
+		select g.id id,g.name gname,t.name tname,count
+		from garbage g LEFT JOIN type t on g.tid=t.id
+		<choose>
+			<when test="tid!=0">
+				where tid in (#{tid})
+			</when>
+			<otherwise>
+				where tid in (1,2,3,4)
+			</otherwise>
+		</choose>
+		and g.name like #{name} ORDER BY count DESC 
+		<bind name="name" value="'%'+name+'%'" />
+	</select> 
+
+	<select id="selByRealName" resultType="garbageinfo"
+		parameterType="String">
+		SELECT g.id id,g.name
+		gname,t.name tname,tid,count
+		from garbage g LEFT JOIN type t on g.tid=t.id where g.name = #{name}
+		ORDER BY count desc
+	</select>
+
+	<insert id="addGarbage" parameterType="garbage">
+		insert into garbage (id,name,tid) VALUES (default,#{name},#{tid})
+	</insert>
+	
+	<delete id="delGarbage" parameterType="String">
+	delete from garbage where name= #{name}
+	</delete>
+	
+	<update id="updGarbage" parameterType="garbage">
+	update garbage SET tid=#{tid},name=#{name},count=#{count} where id=#{id} 
+	</update>
+	
+	<select id="selCountByTid" parameterType="String" resultType="int">
+	SELECT count(id)
+		from garbage 
+		<choose>
+			<when test="tid!=0"> 
+     where tid=#{tid} 
+     </when>
+     <otherwise>
+     where tid in(1,2,3,4)
+     </otherwise>
+     </choose>
+	</select>
+		
+	<select id="selCountByName" parameterType="String" resultType="int">
+	SELECT count(id)
+		from garbage where name like #{name}
+	<bind name="name" value="'%'+name+'%'" />
+	</select>
+	
+		<select id="selCountByNameAndTid" parameterType="String" resultType="int">
+	SELECT count(id)
+		from garbage where name like #{name} and tid=#{tid}
+	<bind name="name" value="'%'+name+'%'" />
+	</select>
+</mapper>
